@@ -33,7 +33,7 @@ const Home = () => {
           <img
             src={eventPoster}
             alt="ZTCE 2025"
-            className="w-full h-full object-cover opacity-20"
+            className="w-full h-full object-cover opacity-40"
           />
           <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary/80 to-secondary/70"></div>
         </div>
