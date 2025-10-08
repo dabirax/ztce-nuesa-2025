@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,6 @@ const step1Schema = z.object({
   dateOfBirth: z.string().min(1, "Date of birth is required"),
   phoneNumber: z.string().min(10, "Valid phone number is required"),
   email: z.string().email("Valid email is required"),
-  whatsappNumber: z.string().optional(),
 });
 
 const step2Schema = z.object({
@@ -29,7 +28,7 @@ const step2Schema = z.object({
   department: z.string().min(2, "Department is required"),
   level: z.string().min(1, "Please select your level"),
   hearAbout: z.string().min(1, "Please select an option"),
-  expectations: z.string().min(10, "Please share your expectations (minimum 10 characters)"),
+  expectations: z.string().min(10, "Please share your expectations (minimum 10 characters)").optional(),
 });
 
 type Step1Data = z.infer<typeof step1Schema>;
@@ -46,6 +45,7 @@ const Register = () => {
     register: registerStep1,
     handleSubmit: handleSubmitStep1,
     formState: { errors: errorsStep1 },
+    control: controlStep1,
   } = useForm<Step1Data>({
     resolver: zodResolver(step1Schema),
     defaultValues: step1Data || undefined,
@@ -67,13 +67,59 @@ const Register = () => {
     toast.success("Step 1 completed!");
   };
 
-  const onStep2Submit = (data: Step2Data) => {
-    const completeData = { ...step1Data!, ...data };
+  // const onStep2Submit = (data: Step2Data) => {
+  //   const completeData = { ...step1Data!, ...data };
+  //   setSubmittedData(completeData);
+  //   setIsSubmitted(true);
+  //   toast.success("Registration successful! 🎉");
+  //   console.log("Registration Data:", completeData);
+  // };
+
+const onStep2Submit = async (data: Step2Data) => {
+  if (!step1Data) return;
+
+  const completeData = { 
+    fullName: step1Data.fullName,
+    gender: step1Data.gender,
+    dateOfBirth: step1Data.dateOfBirth,
+    phoneNumber: step1Data.phoneNumber,
+    email: step1Data.email,
+    institutionName: data.institution,
+    faculty: data.faculty,
+    department: data.department,
+    level: data.level,
+    heardFrom: data.hearAbout,
+    expectations: data.expectations,
+  };
+
+  try {
+    const response = await fetch("https://ztce-backend.onrender.com/api/attendees", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(completeData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Server Error:", errorData);
+      toast.error(errorData.message || "Failed to register. Please try again.");
+      return;
+    }
+
+    const result = await response.json();
+    console.log("Server Response:", result);
+
+    toast.success("Registration successful! 🎉");
     setSubmittedData(completeData);
     setIsSubmitted(true);
-    toast.success("Registration successful! 🎉");
-    console.log("Registration Data:", completeData);
-  };
+  } catch (error) {
+    console.error("Network Error:", error);
+    toast.error("Unable to connect to the server. Please check your internet.");
+  }
+};
+
 
   const goToPreviousStep = () => {
     setCurrentStep(1);
@@ -145,7 +191,7 @@ const Register = () => {
         </div>
 
         {/* Progress Indicator */}
-        <div className="flex items-center justify-center mb-8">
+        {/* <div className="flex items-center justify-center mb-8">
           <div className="flex items-center gap-4">
             <div className={`flex items-center justify-center w-10 h-10 rounded-full ${currentStep >= 1 ? 'bg-primary text-white' : 'bg-muted border-2 border-border'} font-semibold`}>
               1
@@ -155,13 +201,13 @@ const Register = () => {
               2
             </div>
           </div>
-        </div>
+        </div> */}
 
         <Card className="p-6 md:p-8">
           {currentStep === 1 ? (
             <form onSubmit={handleSubmitStep1(onStep1Submit)} className="space-y-6">
               <div className="mb-6">
-                <h2 className="text-2xl font-bold text-foreground">Personal Information</h2>
+                <h2 className="text-2xl font-bold text-foreground flex justify-center">Personal Information</h2>
                 <p className="text-muted-foreground">Step 1 of 2</p>
               </div>
 
@@ -180,28 +226,39 @@ const Register = () => {
                 </div>
 
                 <div>
-                  <Label>Gender *</Label>
-                  <RadioGroup
-                    onValueChange={(value) => registerStep1("gender").onChange({ target: { value } })}
-                    className="flex gap-4 mt-2"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="Male" id="male" />
-                      <Label htmlFor="male">Male</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="Female" id="female" />
-                      <Label htmlFor="female">Female</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="Prefer not to say" id="other" />
-                      <Label htmlFor="other">Prefer not to say</Label>
-                    </div>
-                  </RadioGroup>
-                  {errorsStep1.gender && (
-                    <p className="text-sm text-destructive mt-1">{errorsStep1.gender.message}</p>
-                  )}
-                </div>
+  <Label>Gender *</Label>
+  <Controller
+    name="gender"
+    control={controlStep1} // We'll fix typing below
+    render={({ field }) => (
+      <RadioGroup
+        onValueChange={field.onChange}
+        value={field.value}
+        className="flex gap-4 mt-2"
+      >
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem value="Male" id="male" />
+          <Label htmlFor="male">Male</Label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem value="Female" id="female" />
+          <Label htmlFor="female">Female</Label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem value="Prefer not to say" id="other" />
+          <Label htmlFor="other">Prefer not to say</Label>
+        </div>
+      </RadioGroup>
+    )}
+  />
+
+  {errorsStep1.gender && (
+    <p className="text-sm text-destructive mt-1">
+      {errorsStep1.gender.message}
+    </p>
+  )}
+</div>
+
 
                 <div>
                   <Label htmlFor="dateOfBirth">Date of Birth *</Label>
@@ -244,16 +301,6 @@ const Register = () => {
                   )}
                 </div>
 
-                <div>
-                  <Label htmlFor="whatsappNumber">WhatsApp Number (Optional)</Label>
-                  <Input
-                    id="whatsappNumber"
-                    type="tel"
-                    {...registerStep1("whatsappNumber")}
-                    placeholder="080XXXXXXXX"
-                    className="mt-1"
-                  />
-                </div>
               </div>
 
               <Button type="submit" size="lg" className="w-full">
@@ -356,7 +403,7 @@ const Register = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="expectations">What are your expectations from the conference? *</Label>
+                  <Label htmlFor="expectations">What are your expectations from the conference?</Label>
                   <Textarea
                     id="expectations"
                     {...registerStep2("expectations")}
