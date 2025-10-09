@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { ChevronLeft, ChevronRight, CheckCircle } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const step1Schema = z.object({
   fullName: z.string().min(2, "Full name is required"),
@@ -23,7 +24,7 @@ const step1Schema = z.object({
 });
 
 const step2Schema = z.object({
-  institution: z.string().min(2, "Institution name is required"),
+  institutionName: z.string().min(2, "Institution name is required"),
   faculty: z.string().min(2, "Faculty is required"),
   department: z.string().min(2, "Department is required"),
   level: z.string().min(1, "Please select your level"),
@@ -84,7 +85,7 @@ const onStep2Submit = async (data: Step2Data) => {
     dateOfBirth: step1Data.dateOfBirth,
     phoneNumber: step1Data.phoneNumber,
     email: step1Data.email,
-    institutionName: data.institution,
+    institutionName: data.institutionName,
     faculty: data.faculty,
     department: data.department,
     level: data.level,
@@ -144,7 +145,7 @@ const onStep2Submit = async (data: Step2Data) => {
               <div className="space-y-2 text-sm">
                 <p><strong>Name:</strong> {submittedData.fullName}</p>
                 <p><strong>Email:</strong> {submittedData.email}</p>
-                <p><strong>Institution:</strong> {submittedData.institution}</p>
+                <p><strong>Institution:</strong> {submittedData.institutionName}</p>
                 <p><strong>Department:</strong> {submittedData.department}</p>
                 <p><strong>Level:</strong> {submittedData.level}</p>
               </div>
@@ -153,13 +154,13 @@ const onStep2Submit = async (data: Step2Data) => {
               You'll receive updates and further information via email and WhatsApp.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
+              {/* <Button 
                 onClick={() => window.print()}
                 variant="outline"
                 size="lg"
               >
                 Print Summary
-              </Button>
+              </Button> */}
               <Button 
                 onClick={() => {
                   setIsSubmitted(false);
@@ -170,6 +171,16 @@ const onStep2Submit = async (data: Step2Data) => {
                 size="lg"
               >
                 Register Another Participant
+              </Button>
+              <Button 
+                onClick={() => {
+                  setIsSubmitted(false);
+                  
+                }}
+                size="lg"
+              ><Link to="/">
+                Back to Home
+                </Link>
               </Button>
             </div>
           </Card>
@@ -319,12 +330,12 @@ const onStep2Submit = async (data: Step2Data) => {
                   <Label htmlFor="institution">Institution Name *</Label>
                   <Input
                     id="institution"
-                    {...registerStep2("institution")}
+                    {...registerStep2("institutionName")}
                     placeholder="e.g., FUTA, UNILAG, OAU"
                     className="mt-1"
                   />
-                  {errorsStep2.institution && (
-                    <p className="text-sm text-destructive mt-1">{errorsStep2.institution.message}</p>
+                  {errorsStep2.institutionName && (
+                    <p className="text-sm text-destructive mt-1">{errorsStep2.institutionName.message}</p>
                   )}
                 </div>
 
@@ -420,13 +431,12 @@ const onStep2Submit = async (data: Step2Data) => {
                 <Button 
                   type="button" 
                   variant="outline" 
-                  size="lg" 
                   onClick={goToPreviousStep}
                   className="flex-1"
                 >
                   <ChevronLeft className="mr-2" /> Previous
                 </Button>
-                <Button type="submit" size="lg" className="flex-1">
+                <Button type="submit" className="flex-1">
                   Submit Registration
                 </Button>
               </div>
