@@ -190,7 +190,7 @@ const onStep2Submit = async (data: Step2Data) => {
   }
 
   return (
-    <div className="min-h-screen pt-20 pb-16 bg-muted">
+    <div className="min-h-screen pt-24 pb-16 bg-muted">
       <div className="container mx-auto px-4 max-w-3xl">
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
