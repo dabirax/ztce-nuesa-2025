@@ -277,7 +277,7 @@ const onStep2Submit = async (data: Step2Data) => {
                     id="dateOfBirth"
                     type="date"
                     {...registerStep1("dateOfBirth")}
-                    className="mt-1"
+                    className="mt-1 w-fit "
                   />
                   {errorsStep1.dateOfBirth && (
                     <p className="text-sm text-destructive mt-1">{errorsStep1.dateOfBirth.message}</p>
